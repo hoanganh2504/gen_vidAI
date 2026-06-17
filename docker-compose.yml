@@ -1,0 +1,13 @@
+services:
+  food-video-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: food-video-ai
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+data/app.db
+data/videos/
+data/mock/*.mp4
+gen_vidAI/.git/
+gen_vidAI/node_modules/
+gen_vidAI/frontend/node_modules/
+gen_vidAI/frontend/dist/
+tests/
+*.log
