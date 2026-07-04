@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập - KingFoodmart AI Clip Studio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
+  </head>
+  <body>
+    <div class="login-page">
+      <div class="login-card">
+        <h1>Đăng nhập</h1>
+        <p class="text-secondary">Vui lòng đăng nhập để sử dụng KingFoodmart AI Clip Studio.</p>
+        {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+        <form action="/login" method="post" class="mt-4">
+          <div class="mb-3">
+            <label for="username" class="form-label">Tên đăng nhập</label>
+            <input id="username" name="username" class="form-control" type="text" value="admin" required />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Mật khẩu</label>
+            <input id="password" name="password" class="form-control" type="password" required />
+          </div>
+          <button class="btn btn-dark w-100" type="submit">Đăng nhập</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

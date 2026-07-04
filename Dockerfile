@@ -1,13 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-alpine AS frontend-builder
-WORKDIR /frontend
-COPY gen_vidAI/frontend/package*.json ./
-RUN npm ci
-COPY gen_vidAI/frontend/ ./
-RUN npm run build
-
-FROM python:3.11-slim AS runtime
+FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -21,9 +14,8 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
-COPY gen_vidAI/frontend/public ./gen_vidAI/frontend/public
-COPY --from=frontend-builder /frontend/dist ./gen_vidAI/frontend/dist
-COPY .env.example README.md ./
+COPY .env.example ./
+COPY README.md ./
 
 RUN mkdir -p /app/data/mock /app/data/videos
 

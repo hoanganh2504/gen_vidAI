@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 
+from app.core.auth import require_login
 from app.core.config import settings
 from app.core.constants import ERROR_MESSAGES
 from app.repositories.video_job_repository import create_job, delete_job, get_job, list_jobs
@@ -10,7 +11,7 @@ from app.schemas.video import VideoCreate
 from app.services import video_job_service
 from app.services.food_prompt_templates import list_templates
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_login)])
 
 
 def error_response(code: str, status_code: int, message: str | None = None) -> JSONResponse:

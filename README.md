@@ -1,45 +1,36 @@
 # Food AI Video Generator
 
-Web tool noi bo de tao video mon an bang AI. Backend dung FastAPI, Jinja2, SQLite, SQLAlchemy va co Mock Mode de phat trien ma khong ton Kling credit.
+Ứng dụng tạo video món ăn bằng AI với FastAPI, Jinja2, SQLite và tích hợp Kling.
 
-## Tinh nang
+## Tính năng
 
-- Form tao video tu noi dung mon an, phong cach, thoi luong va ty le khung hinh.
-- Prompt builder rule-based chuyen input thanh prompt tieng Anh toi uu.
-- Background job khong giu HTTP request trong luc tao video.
-- SQLite luu lich su job, status, prompt, loi va duong dan video local.
-- Mock Mode mo phong Kling va copy `data/mock/sample.mp4` sang `data/videos/{job_id}.mp4`.
-- Giao dien Jinja/HTML/CSS/JS thuan, co polling status, xem video, tai MP4, retry va xoa job.
+- Giao diện tạo prompt và theo dõi tiến trình video
+- Đăng nhập cơ bản trước khi sử dụng
+- Mock mode để test local khi chưa có khóa thật
+- Real mode gọi API Kling để tạo video thật
+- Lưu lịch sử job và file video vào local
 
-## Cau truc
+## Cấu trúc chính
 
 ```text
 app/
-  api/videos.py
-  core/config.py
-  core/constants.py
-  db/database.py
-  db/models.py
-  repositories/video_job_repository.py
-  schemas/video.py
-  services/kling_client.py
-  services/prompt_builder.py
-  services/video_downloader.py
-  services/video_job_service.py
-  static/css/app.css
-  static/js/app.js
-  templates/index.html
-tests/
-data/mock/
-data/videos/
+  api/
+  core/
+  db/
+  repositories/
+  schemas/
+  services/
+  static/
+  templates/
 ```
 
-## Yeu cau
+## Yêu cầu
 
 - Python 3.11+
-- Windows PowerShell hoac terminal tuong duong
+- Docker Desktop (nếu dùng Docker)
+- Windows PowerShell hoặc terminal tương đương
 
-## Cai dat tren Windows
+## Chạy thủ công trên Windows
 
 ```powershell
 python -m venv venv
@@ -48,75 +39,78 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Them video mau cho Mock Mode:
+Chỉnh sửa file `.env` trước khi chạy:
 
-```powershell
-mkdir data\mock
-copy C:\path\to\sample.mp4 data\mock\sample.mp4
+```env
+KLING_MOCK_MODE=false
+KLING_ACCESS_KEY=your_access_key
+KLING_SECRET_KEY=your_secret_key
+KLING_API_BASE_URL=https://api-singapore.klingai.com
+KLING_MODEL_NAME=kling-v1-6
+AUTH_USERNAME=admin
+AUTH_PASSWORD=admin
 ```
 
-Khoi dong:
+Khởi động server:
 
 ```powershell
 uvicorn app.main:app --reload
 ```
 
-Mo trang:
+Mở trình duyệt:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-## Chay bang Docker
+## Chạy bằng Docker
 
-Yeu cau:
-
-- Docker Desktop
-- File `.env` da duoc tao tu `.env.example`
-
-Lenh chay:
+Tạo file `.env` trước:
 
 ```powershell
 copy .env.example .env
+```
+
+Khởi động container:
+
+```powershell
 docker compose up --build
 ```
 
-Mo trang:
+Mở:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-Dung container:
+Dừng container:
 
 ```powershell
 docker compose down
 ```
 
-Du lieu SQLite va video duoc mount ra thu muc local:
+Dữ liệu SQLite và video được lưu ở thư mục local:
 
 ```text
 data/app.db
 data/videos/
-data/mock/sample.mp4
+data/mock/
 ```
 
-Khong dua `.env` vao Docker image. API key Kling/OpenAI chi duoc nap luc container chay qua `env_file`.
+## Mock mode
 
-## Mock Mode
-
-Trong `.env`:
+Đặt:
 
 ```env
 KLING_MOCK_MODE=true
 MOCK_VIDEO_PATH=./data/mock/sample.mp4
 ```
 
-Neu thieu `sample.mp4`, job se chuyen sang `failed` va hien loi ro rang. Server khong crash.
+Nếu thiếu file mẫu, job sẽ báo lỗi rõ ràng nhưng server vẫn chạy.
 
 ## Real Kling API
 
-Trong `.env`, tat mock va dien cau hinh:
+Đặt:
 
 ```env
 KLING_MOCK_MODE=false
@@ -126,40 +120,8 @@ KLING_API_BASE_URL=https://api-singapore.klingai.com
 KLING_MODEL_NAME=kling-v1-6
 ```
 
-Real mode tao JWT tu `KLING_ACCESS_KEY` va `KLING_SECRET_KEY`, goi text-to-video, poll task, lay video URL va tai MP4 ve local. Hay bat dau bang model `kling-v1-6` de kiem soat chi phi; khi doi model, can doi chieu duration/aspect ratio voi docs Kling hien tai.
-
-## API
-
-- `GET /` - giao dien chinh.
-- `POST /api/videos/generate` - tao job, tra ve `202 Accepted`.
-- `GET /api/videos/{job_id}` - chi tiet job.
-- `GET /api/videos?page=1&page_size=20` - lich su.
-- `GET /api/videos/{job_id}/stream` - stream MP4.
-- `GET /api/videos/{job_id}/download` - tai MP4.
-- `POST /api/videos/{job_id}/retry` - tao job moi tu job failed.
-- `DELETE /api/videos/{job_id}` - xoa record va file local neu co.
-
-## Loi thuong gap
-
-- `VIDEO_DOWNLOAD_FAILED`: thieu `data/mock/sample.mp4` trong Mock Mode hoac URL provider khong tai duoc.
-- `KLING_REAL_API_NOT_CONFIGURED`: dang tat Mock Mode nhung adapter real chua duoc cau hinh/xac minh.
-- `VIDEO_FILE_NOT_FOUND`: job chua completed hoac file local da bi xoa.
-
 ## Test
 
 ```powershell
-pytest
+pytest -q
 ```
-
-## Backup
-
-Dung server truoc khi backup de tranh copy file dang ghi:
-
-```powershell
-copy data\app.db backup\app.db
-xcopy data\videos backup\videos /E /I
-```
-
-## Canh bao credit
-
-Khi chay Real API, moi job co the ton Kling credit. Hay test bang Mock Mode truoc, gioi han noi dung dau vao va theo doi loi rate limit/balance tu provider.

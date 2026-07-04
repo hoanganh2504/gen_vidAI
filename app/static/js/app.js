@@ -16,33 +16,45 @@ const styleLabels = {
   asmr: 'Food ASMR',
 };
 
-const contentEl = document.getElementById('content');
-const charcount = document.getElementById('charcount');
-const contentError = document.getElementById('content-error');
-const form = document.getElementById('video-form');
-const createBtn = document.getElementById('create-btn');
-const createSpinner = document.getElementById('create-spinner');
-const createLabel = document.getElementById('create-label');
-const statusArea = document.getElementById('status-area');
-const emptyState = document.getElementById('empty-state');
-const statusText = document.getElementById('status-text');
-const statusSpinner = document.getElementById('status-spinner');
-const jobMeta = document.getElementById('job-meta');
-const progressInner = document.getElementById('progress-inner');
-const videoContainer = document.getElementById('video-container');
-const player = document.getElementById('player');
-const downloadLink = document.getElementById('download-link');
-const optimizedPrompt = document.getElementById('optimized-prompt');
-const errorArea = document.getElementById('error-area');
-const historyList = document.getElementById('history-list');
-const newBtn = document.getElementById('new-btn');
-const toast = document.getElementById('toast');
+function getEl(id) {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn(`Missing element with id=${id}`);
+  }
+  return el;
+}
+
+const contentEl = getEl('content');
+const charcount = getEl('charcount');
+const contentError = getEl('content-error');
+const form = getEl('video-form');
+const createBtn = getEl('create-btn');
+const createSpinner = getEl('create-spinner');
+const createLabel = getEl('create-label');
+const statusArea = getEl('status-area');
+const emptyState = getEl('empty-state');
+const statusText = getEl('status-text');
+const statusSpinner = getEl('status-spinner');
+const jobMeta = getEl('job-meta');
+const progressInner = getEl('progress-inner');
+const videoContainer = getEl('video-container');
+const player = getEl('player');
+const downloadLink = getEl('download-link');
+const optimizedPrompt = getEl('optimized-prompt');
+const errorArea = getEl('error-area');
+const historyList = getEl('history-list');
+const newBtn = getEl('new-btn');
+const toast = getEl('toast');
 
 let currentJobId = null;
 let pollTimer = null;
 let toastTimer = null;
 
 function showToast(message) {
+  if (!toast) {
+    console.warn('Toast element missing, message:', message);
+    return;
+  }
   toast.textContent = message;
   toast.style.display = 'block';
   clearTimeout(toastTimer);
@@ -51,14 +63,35 @@ function showToast(message) {
   }, 3200);
 }
 
+// Global error handlers to capture uncaught errors and promises
+window.addEventListener('error', (ev) => {
+  try {
+    const msg = ev?.message || String(ev);
+    console.error('Uncaught error:', ev.error || ev);
+    showToast(msg);
+  } catch (e) {
+    console.error('Error in global error handler', e);
+  }
+});
+
+window.addEventListener('unhandledrejection', (ev) => {
+  try {
+    const reason = ev?.reason;
+    console.error('Unhandled rejection:', reason);
+    showToast(reason?.message || String(reason));
+  } catch (e) {
+    console.error('Error in rejection handler', e);
+  }
+});
+
 function getErrorMessage(payload, fallback = 'Có lỗi xảy ra. Vui lòng thử lại.') {
   return payload?.error?.message || payload?.detail?.error?.message || payload?.detail || fallback;
 }
 
 function setSubmitting(isSubmitting) {
-  createBtn.disabled = isSubmitting;
-  createSpinner.classList.toggle('d-none', !isSubmitting);
-  createLabel.textContent = isSubmitting ? 'Đang tạo yêu cầu...' : 'Tạo video AI';
+  if (createBtn) createBtn.disabled = isSubmitting;
+  if (createSpinner && createSpinner.classList) createSpinner.classList.toggle('d-none', !isSubmitting);
+  if (createLabel) createLabel.textContent = isSubmitting ? 'Đang tạo yêu cầu...' : 'Tạo video AI';
 }
 
 function updateCharCount() {
@@ -81,13 +114,19 @@ function validateContent() {
 function resetResult() {
   currentJobId = null;
   clearPoll();
-  emptyState.classList.remove('d-none');
-  statusArea.classList.add('d-none');
-  errorArea.classList.add('d-none');
-  videoContainer.classList.add('d-none');
-  newBtn.classList.add('d-none');
-  player.removeAttribute('src');
-  player.load();
+  if (emptyState && emptyState.classList) emptyState.classList.remove('d-none');
+  if (statusArea && statusArea.classList) statusArea.classList.add('d-none');
+  if (errorArea && errorArea.classList) errorArea.classList.add('d-none');
+  if (videoContainer && videoContainer.classList) videoContainer.classList.add('d-none');
+  if (newBtn && newBtn.classList) newBtn.classList.add('d-none');
+  if (player) {
+    try {
+      player.removeAttribute('src');
+      player.load();
+    } catch (e) {
+      console.warn('Player reset failed', e);
+    }
+  }
 }
 
 function clearPoll() {
@@ -98,29 +137,31 @@ function clearPoll() {
 }
 
 function renderJob(job) {
-  emptyState.classList.add('d-none');
-  statusArea.classList.remove('d-none');
-  newBtn.classList.remove('d-none');
-  errorArea.classList.add('d-none');
+  if (emptyState && emptyState.classList) emptyState.classList.add('d-none');
+  if (statusArea && statusArea.classList) statusArea.classList.remove('d-none');
+  if (newBtn && newBtn.classList) newBtn.classList.remove('d-none');
+  if (errorArea && errorArea.classList) errorArea.classList.add('d-none');
 
   const label = statusLabels[job.status] || job.status;
-  statusText.textContent = label;
-  jobMeta.textContent = `${job.content} • ${styleLabels[job.style] || job.style} • ${job.duration}s • ${job.aspect_ratio}`;
-  progressInner.style.width = `${Math.round((job.progress || 0) * 100)}%`;
-  statusSpinner.classList.toggle('d-none', ['completed', 'failed', 'cancelled'].includes(job.status));
+  if (statusText) statusText.textContent = label;
+  if (jobMeta) jobMeta.textContent = `${job.content} • ${styleLabels[job.style] || job.style} • ${job.duration}s • ${job.aspect_ratio}`;
+  if (progressInner) progressInner.style.width = `${Math.round((job.progress || 0) * 100)}%`;
+  if (statusSpinner && statusSpinner.classList) statusSpinner.classList.toggle('d-none', ['completed', 'failed', 'cancelled'].includes(job.status));
 
   if (job.status === 'completed') {
-    videoContainer.classList.remove('d-none');
-    player.src = `/api/videos/${job.id}/stream`;
-    downloadLink.href = `/api/videos/${job.id}/download`;
-    optimizedPrompt.textContent = job.optimized_prompt || '';
+    if (videoContainer && videoContainer.classList) videoContainer.classList.remove('d-none');
+    if (player) player.src = `/api/videos/${job.id}/stream`;
+    if (downloadLink) downloadLink.href = `/api/videos/${job.id}/download`;
+    if (optimizedPrompt) optimizedPrompt.textContent = job.optimized_prompt || '';
   } else {
-    videoContainer.classList.add('d-none');
+    if (videoContainer && videoContainer.classList) videoContainer.classList.add('d-none');
   }
 
   if (job.status === 'failed') {
-    errorArea.classList.remove('d-none');
-    errorArea.innerHTML = `<strong>Tạo video thất bại.</strong><div>${job.error_message || 'Vui lòng thử lại.'}</div><button class="btn btn-sm btn-outline-danger mt-2" type="button" onclick="retryJob(${job.id})">Thử lại</button>`;
+    if (errorArea && errorArea.classList) {
+      errorArea.classList.remove('d-none');
+      errorArea.innerHTML = `<strong>Tạo video thất bại.</strong><div>${job.error_message || 'Vui lòng thử lại.'}</div><button class="btn btn-sm btn-outline-danger mt-2" type="button" onclick="retryJob(${job.id})">Thử lại</button>`;
+    }
   }
 }
 
@@ -156,7 +197,8 @@ function pollJob(jobId) {
   pollTimer = setInterval(tick, 3000);
 }
 
-form.addEventListener('submit', async (event) => {
+if (form) {
+  form.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!validateContent()) return;
 
@@ -183,7 +225,10 @@ form.addEventListener('submit', async (event) => {
   } finally {
     setSubmitting(false);
   }
-});
+  });
+} else {
+  console.warn('Video form not found; submit disabled');
+}
 
 contentEl.addEventListener('input', () => {
   updateCharCount();
@@ -192,14 +237,27 @@ contentEl.addEventListener('input', () => {
 
 document.querySelectorAll('.sample').forEach((button) => {
   button.addEventListener('click', () => {
+    if (!contentEl) return;
     contentEl.value = button.textContent;
     updateCharCount();
     validateContent();
   });
 });
 
-newBtn.addEventListener('click', resetResult);
-document.getElementById('refresh-history').addEventListener('click', refreshHistory);
+if (newBtn) newBtn.addEventListener('click', resetResult);
+const refreshBtn = getEl('refresh-history');
+if (refreshBtn) refreshBtn.addEventListener('click', refreshHistory);
+document.getElementById('new-clip').addEventListener('click', () => {
+  contentEl.value = '';
+  updateCharCount();
+  validateContent();
+  resetResult();
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateCharCount();
+  refreshHistory();
+});
 
 async function refreshHistory() {
   try {

@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     KLING_ACCESS_KEY: str | None = None
     KLING_SECRET_KEY: str | None = None
     KLING_API_BASE_URL: str | None = None
-    KLING_MODEL_NAME: str | None = None
+    KLING_MODEL_NAME: str = "kling-v1-6"
     KLING_REQUEST_TIMEOUT: int = 60
     KLING_POLL_INTERVAL_SECONDS: int = 5
     KLING_MAX_POLL_MINUTES: int = 20
@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4.1-mini"
     USE_GPT_PROMPT_BUILDER: bool = False
     OPENAI_REQUEST_TIMEOUT: int = 45
+
+    AUTH_USERNAME: str = "admin"
+    AUTH_PASSWORD: str = "admin"
+    SESSION_SECRET_KEY: str = "super-secret-key"
 
     HOST: str = "127.0.0.1"
     PORT: int = 8000
