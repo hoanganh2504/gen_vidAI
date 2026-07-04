@@ -16,6 +16,15 @@ const styleLabels = {
   asmr: 'Food ASMR',
 };
 
+// Icon set used for the history action buttons (Xem/Tải/Xóa). Kept as
+// plain SVG strings so they inherit currentColor from whatever
+// btn-outline-* class is applied (primary/success/danger).
+const ACTION_ICONS = {
+  view: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+};
+
 function getEl(id) {
   const el = document.getElementById(id);
   if (!el) {
@@ -280,10 +289,10 @@ async function refreshHistory() {
             <span class="badge ${job.status === 'completed' ? 'text-bg-success' : job.status === 'failed' ? 'text-bg-danger' : 'text-bg-secondary'}">${statusLabels[job.status] || job.status}</span>
           </div>
           <div class="history-actions">
-            <button class="btn btn-sm btn-outline-primary" type="button" onclick="viewJob(${job.id})">Xem</button>
-            ${canDownload ? `<a class="btn btn-sm btn-outline-success" href="/api/videos/${job.id}/download">Tải</a>` : ''}
+            <button class="btn btn-sm btn-outline-primary icon-btn" type="button" onclick="viewJob(${job.id})" title="Xem" aria-label="Xem">${ACTION_ICONS.view}</button>
+            ${canDownload ? `<a class="btn btn-sm btn-outline-success icon-btn" href="/api/videos/${job.id}/download" title="Tải" aria-label="Tải">${ACTION_ICONS.download}</a>` : ''}
             ${canRetry ? `<button class="btn btn-sm btn-outline-warning" type="button" onclick="retryJob(${job.id})">Thử lại</button>` : ''}
-            <button class="btn btn-sm btn-outline-danger" type="button" onclick="deleteJob(${job.id})">Xóa</button>
+            <button class="btn btn-sm btn-outline-danger icon-btn" type="button" onclick="deleteJob(${job.id})" title="Xóa" aria-label="Xóa">${ACTION_ICONS.trash}</button>
           </div>
         </article>
       `;
