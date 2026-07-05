@@ -23,21 +23,33 @@
   box-sizing: border-box;
 }
 
+html {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--ink);
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: "Plus Jakarta Sans", "Inter", sans-serif;
   letter-spacing: -0.02em;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -68,6 +80,7 @@ button, input, select, textarea {
   border-color: var(--brand);
   color: #fff;
   box-shadow: 0 6px 16px rgba(242, 96, 10, 0.24);
+  transition: all 0.2s ease;
 }
 
 .btn-primary:hover,
@@ -105,23 +118,12 @@ button, input, select, textarea {
   color: var(--brand-dark);
 }
 
-.form-control,
-.form-select {
-  border-color: var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 0.2rem var(--brand-soft);
-}
-
 /* ---------------------------------- Header ---------------------------------- */
 .app-header {
   background: #ff7600;
   border-bottom: 1px solid var(--border);
   padding: 18px 24px;
+  flex-shrink: 0;
 }
 
 .header-inner {
@@ -148,9 +150,8 @@ button, input, select, textarea {
 .header-title {
   flex: 1;
   min-width: 0;
-  padding-left: 4px;
-  border-left: 1px solid var(--border);
   padding-left: 20px;
+  border-left: 1px solid var(--border);
 }
 
 .eyebrow {
@@ -206,8 +207,10 @@ button, input, select, textarea {
   display: grid;
   grid-template-columns: 260px minmax(0, 1.5fr) 300px;
   gap: 20px;
-  padding: 20px 24px 40px;
-  align-items: start;
+  padding: 20px 24px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .sidebar,
@@ -216,6 +219,12 @@ button, input, select, textarea {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  height: 100%;
+  min-height: 0;
+}
+
+.sidebar,
+.storyboard {
   padding: 22px;
 }
 
@@ -224,8 +233,7 @@ button, input, select, textarea {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  position: sticky;
-  top: 20px;
+  overflow: hidden;
 }
 
 .icon-plus {
@@ -272,9 +280,10 @@ button, input, select, textarea {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: calc(100vh - 260px);
 }
 
 .saved-empty {
@@ -283,8 +292,6 @@ button, input, select, textarea {
   padding: 14px 2px;
 }
 
-/* Reset any raw <ul>/<ol>/<li> the history list may render, so nothing
-   falls back to default browser bullets or block stacking. */
 .saved-list ul,
 .saved-list ol {
   list-style: none;
@@ -314,10 +321,8 @@ button, input, select, textarea {
   border-color: var(--brand);
 }
 
-/* Title row: name of the clip, single line, truncated so long prompts
-   never wrap word-by-word down the card */
-.saved-card > strong,
-.history-item > strong,
+.saved-card>strong,
+.history-item>strong,
 .history-item .title,
 .saved-card .title {
   display: block;
@@ -329,8 +334,6 @@ button, input, select, textarea {
   text-overflow: ellipsis;
 }
 
-/* Meta line: style / duration / ratio / timestamp shown as one row of
-   small pieces separated by a thin dot, instead of a stacked bullet list */
 .saved-card .meta,
 .history-item .meta,
 .saved-list ul,
@@ -344,25 +347,24 @@ button, input, select, textarea {
   min-width: 0;
 }
 
-.saved-card .meta > *,
-.history-item .meta > *,
-.saved-list ul > li,
-.saved-list .meta-list > * {
+.saved-card .meta>*,
+.history-item .meta>*,
+.saved-list ul>li,
+.saved-list .meta-list>* {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
 }
 
-.saved-card .meta > * + *::before,
-.history-item .meta > * + *::before,
-.saved-list ul > li + li::before,
-.saved-list .meta-list > * + *::before {
+.saved-card .meta>*+*::before,
+.history-item .meta>*+*::before,
+.saved-list ul>li+li::before,
+.saved-list .meta-list>*+*::before {
   content: "\2022";
   margin: 0 7px;
   color: var(--border);
 }
 
-/* Status pill (e.g. Hoàn thành / Đang xử lý / Lỗi) */
 .status-pill,
 .status-badge,
 .saved-card .badge,
@@ -389,7 +391,6 @@ button, input, select, textarea {
   color: #218a4c;
 }
 
-/* Action buttons: compact, uniform pills in a single row */
 .history-actions {
   display: flex;
   flex-wrap: wrap;
@@ -408,10 +409,6 @@ button, input, select, textarea {
   line-height: 1.5;
 }
 
-/* Icon-only action buttons (Xem/Tải/Xóa) rendered directly by app.js.
-   Keeps whatever outline color the button already had
-   (primary/success/danger), just makes it a compact circle around the
-   icon instead of a text pill. */
 .icon-btn.btn,
 .history-actions .icon-btn,
 .saved-card .icon-btn,
@@ -431,24 +428,216 @@ button, input, select, textarea {
   height: 15px;
 }
 
-@media (max-width: 720px) {
-  .history-actions {
-    justify-content: flex-start;
-  }
-}
-
-/* ---------------------------------- Main panel / composer ---------------------------------- */
-.main-panel {
+/* ---------------------------------- Main panel / chat panel ---------------------------------- */
+.main-panel.chat-panel {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 20px;
-  min-height: calc(100vh - 190px);
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
 }
 
+.chat-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==================== COMPOSER - FIXED BOTTOM (Đã chỉnh sửa) ==================== */
+/* ==================== CẤU HÌNH COMPOSER (TINH CHỈNH) ==================== */
+.composer-fixed {
+  flex-shrink: 0;
+  margin: 0;
+  /* padding 2 bên (trái/phải) + đáy, tạo khoảng cách với nội dung bên trong */
+  padding: 14px 32px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* QUAN TRỌNG: trước đây .composer-card có "padding: 0" đứng SAU .composer-fixed
+   trong file, nên nó đè mất padding trái/phải đã set ở trên (2 selector cùng
+   độ ưu tiên -> ai đứng sau thắng). Đã bỏ padding:0 ở đây để không còn xung đột. */
+.composer-card {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 100%;
+}
+
+.chat-prompt-box {
+  display: grid;
+  /* Định nghĩa các cột sao cho nó tự co dãn nhưng vẫn giữ khoảng cách với viền */
+  grid-template-columns: 1fr auto;
+  gap: 10px 20px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  /* Để padding của composer-fixed lo liệu phần cách viền */
+}
+
+.chat-controls {
+  display: contents;
+}
+
+/* ==================== 3 CỘT TÙY CHỈNH (Đã bo tròn hơn) ==================== */
+/* ==================== 3 CỘT TÙY CHỈNH (Cập nhật) ==================== */
+.select-group {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  /* Dồn hết về bên trái */
+  gap: 12px;
+  /* Khoảng cách giữa các ô */
+  width: 100%;
+}
+
+.select-group .form-select {
+  /* Tùy chỉnh độ rộng riêng cho từng ô để nhìn cân đối */
+  flex: 0 1 auto;
+  min-width: 120px;
+  /* Độ rộng tối thiểu */
+  max-width: 200px;
+  /* Độ rộng tối đa để không quá to */
+  font-size: 0.85rem;
+  height: 38px;
+  padding: 0.25rem 2rem 0.25rem 1rem;
+  background-color: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  /* Viên thuốc */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.select-group .form-select:hover {
+  border-color: #d8d0c5;
+}
+
+/* ==================== KHUNG NHẬP CHAT (Thu nhỏ, thanh mảnh) ==================== */
+.chat-input {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+
+  /* Cấu hình co giãn linh hoạt nhưng bé hơn */
+  min-height: 44px;
+  /* Giảm từ 48px xuống */
+  height: auto;
+  max-height: 116px;
+  field-sizing: content;
+
+  resize: none;
+  overflow-y: auto;
+  padding: 10px 18px;
+  /* Căn chỉnh lề gọn gàng hơn */
+  font-size: 0.9rem;
+  /* Chữ nhỏ lại chút */
+  line-height: 1.5;
+
+  background: #fcfbfa;
+  border: 1px solid #e2ddd5;
+  border-radius: 22px;
+  /* Bo góc mềm mại, tròn trịa hơn */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.015);
+  transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
+
+  scrollbar-width: thin;
+  scrollbar-color: #d1cbc3 transparent;
+}
+
+/* Tùy chỉnh thanh cuộn thanh lịch */
+.chat-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-input::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+
+.chat-input::-webkit-scrollbar-thumb {
+  background-color: #d1cbc3;
+  border-radius: 10px;
+}
+
+.chat-input::-webkit-scrollbar-thumb:hover {
+  background-color: #b0a9a0;
+}
+
+.chat-input:focus {
+  background: #fff;
+  border-color: var(--brand);
+  box-shadow: 0 4px 16px rgba(242, 96, 10, 0.08), 0 0 0 3px rgba(242, 96, 10, 0.12);
+  outline: none;
+}
+
+.chat-input::placeholder {
+  color: var(--muted);
+}
+
+/* ==================== NÚT GỬI ==================== */
+.chat-send {
+  grid-column: 2;
+  grid-row: 2;
+  height: 44px;
+  /* Đồng bộ tuyệt đối với input */
+  padding: 0 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  /* Khớp với font input */
+  white-space: nowrap;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  margin: 0;
+  transition: transform 0.1s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.chat-send:active {
+  transform: scale(0.96);
+}
+
+/* ==================== ĐẾM KÝ TỰ & THÔNG BÁO LỖI ==================== */
+.form-foot {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  /* khoảng cách giữa số lượng từ và thông báo lỗi */
+  font-size: 0.78rem;
+  margin-top: 2px;
+  padding-left: 14px;
+}
+
+.char-count {
+  color: var(--muted);
+}
+
+.text-danger {
+  font-size: 0.82rem;
+  margin: 0;
+  /* Đảm bảo không bị đẩy lệch */
+}
+
+/* Các thành phần khác giữ nguyên... */
 .composer-intro {
   text-align: center;
-  padding: 6px 0 4px;
+  padding: 28px 12px 12px;
+  opacity: 0;
+  animation: introFadeIn 0.5s ease forwards;
 }
 
 .composer-intro h2 {
@@ -457,151 +646,287 @@ button, input, select, textarea {
   font-weight: 700;
 }
 
-.prompt-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+.composer-intro.d-none {
+  display: none;
 }
 
-.chip {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 999px;
-  padding: 9px 16px;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--ink);
-  transition: all 0.15s ease;
-}
-
-.chip:hover {
-  border-color: var(--brand);
-  background: var(--brand-soft-2);
-  color: var(--brand-dark);
-  transform: translateY(-1px);
-}
-
-.composer-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 18px;
-}
-
-.chat-prompt-box {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.chat-input {
-  border: none;
-  background: transparent;
-  resize: vertical;
-  padding: 6px 4px;
-  font-size: 1.02rem;
+.intro-sub {
+  margin: 10px auto 28px;
+  max-width: 480px;
+  color: var(--ink-soft);
+  font-size: 0.94rem;
   line-height: 1.5;
-  color: var(--ink);
 }
 
-.chat-input:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.chat-input::placeholder {
-  color: var(--muted);
-}
-
-.form-foot {
+.intro-steps {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  max-width: 760px;
+  margin: 0 auto 22px;
 }
 
-.char-count {
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.chat-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
-}
-
-.select-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.intro-step {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: stepIn 0.5s ease forwards;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.select-group .form-select {
-  width: auto;
-  font-size: 0.86rem;
-  padding: 0.4rem 2rem 0.4rem 0.8rem;
-  background-color: var(--surface);
-  border-color: var(--border);
+.intro-step:nth-child(1) {
+  animation-delay: 0.05s;
 }
 
-.chat-send {
+.intro-step:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.intro-step:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.intro-step:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand);
+  box-shadow: var(--shadow-md);
+}
+
+.intro-step h3 {
+  margin: 2px 0 0;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.intro-step p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.step-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
   flex-shrink: 0;
-  padding-inline: 1.4rem;
 }
 
-/* ---------------------------------- Status / results ---------------------------------- */
-.status-card {
+.step-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Bước cuối (Tạo video AI) được nhấn mạnh bằng viền phát sáng nhẹ, gợi ý AI đang "sẵn sàng" */
+.intro-step:nth-child(5) .step-icon {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 0 0 6px var(--brand-soft);
+  animation: pulseGlow 2.4s ease-in-out infinite;
+}
+
+.intro-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  color: var(--muted);
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards;
+  animation-delay: 0.2s;
+}
+
+.intro-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.intro-wish {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+@keyframes introFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes stepIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 6px var(--brand-soft);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px var(--brand-soft-2);
+  }
+}
+
+@media (max-width: 720px) {
+  .intro-steps {
+    flex-direction: column;
+    max-width: 320px;
+  }
+
+  .intro-arrow {
+    transform: rotate(90deg);
+    padding: 2px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .composer-intro,
+  .intro-step,
+  .intro-arrow,
+  .step-icon {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chat-msg {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.chat-msg.user {
+  justify-content: flex-end;
+}
+
+.chat-msg.assistant {
+  justify-content: flex-start;
+}
+
+.msg-bubble {
+  display: inline-block;
+  width: fit-content;
+  max-width: 78%;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.chat-msg.user .msg-bubble {
+  background: var(--brand);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-msg.assistant .msg-bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+  width: fit-content;
+  max-width: 82%;
+}
+
+.status-bubble .progress {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.status-prompt {
+  margin-top: 12px;
+}
+
+.status-prompt summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+  user-select: none;
+}
+
+.status-prompt summary::-webkit-details-marker {
+  display: none;
+}
+
+.status-prompt summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--brand-dark);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.status-prompt[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.status-prompt summary:hover {
+  color: var(--brand);
+}
+
+.status-prompt .prompt-box {
+  margin-top: 10px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-}
-
-.status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.status-row span {
-  font-weight: 700;
-}
-
-.video-preview {
-  display: grid;
-  gap: 18px;
-}
-
-.video-preview video {
-  width: 100%;
-  border-radius: var(--radius-md);
-  background: #000;
-}
-
-.prompt-box {
-  background: var(--surface);
   border-radius: var(--radius-sm);
-  padding: 16px;
-  margin-top: 12px;
-  white-space: pre-wrap;
+  padding: 14px 16px;
+  font-size: 0.82rem;
   line-height: 1.6;
-  font-size: 0.88rem;
+  color: var(--ink-soft);
+  max-height: 260px;
+  overflow-y: auto;
 }
 
-/* ---------------------------------- Storyboard ---------------------------------- */
+/* ---------------------------------- Storyboard (result panel) ---------------------------------- */
 .storyboard {
-  position: sticky;
-  top: 20px;
+  overflow-y: auto;
 }
 
 .storyboard-panel h2 {
@@ -611,6 +936,12 @@ button, input, select, textarea {
   color: var(--ink-soft);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+#storyboard-body {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
 }
 
 .storyboard-placeholder {
@@ -634,87 +965,86 @@ button, input, select, textarea {
   max-width: 220px;
 }
 
-/* ---------------------------------- Toast ---------------------------------- */
-.app-toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  display: none;
-  padding: 14px 18px;
-  background: var(--ink);
-  color: #fff;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  font-size: 0.9rem;
-}
-
-.empty-state {
-  min-height: 200px;
-  display: grid;
-  place-content: center;
+.storyboard-generating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 300px;
   text-align: center;
-  gap: 10px;
   color: var(--muted);
+  background: var(--surface);
   border: 1px dashed var(--border);
   border-radius: var(--radius-md);
   padding: 24px;
-  background: var(--surface);
 }
 
-/* ---------------------------------- Login page ---------------------------------- */
-.login-page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: radial-gradient(circle at 20% 20%, #fff3e8 0%, var(--bg) 60%);
-}
-
-.login-card {
-  width: min(440px, 100%);
-  background: #fff;
-  border-radius: var(--radius-lg);
-  padding: 36px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
-}
-
-.login-card h1 {
-  margin: 0 0 20px;
-  font-size: 1.5rem;
-}
-
-.login-card .form-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.login-card .btn {
+.storyboard-generating .progress {
+  width: 100%;
+  height: 6px;
   border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
 }
 
-.login-card .form-control {
-  border-radius: var(--radius-sm);
+.storyboard-generating .progress-bar {
+  background: var(--brand);
 }
 
-.login-card .alert {
+.storyboard-video {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.storyboard-video video {
+  width: 100%;
+  border-radius: var(--radius-md);
+  background: #000;
+}
+
+.prompt-box {
+  background: var(--surface);
   border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-top: 12px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  font-size: 0.88rem;
 }
 
 /* ---------------------------------- Responsive ---------------------------------- */
 @media (max-width: 1120px) {
+  body {
+    height: auto;
+    overflow: auto;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
+    flex: none;
+    overflow: visible;
+  }
+
+  .sidebar,
+  .storyboard,
+  .main-panel {
+    height: auto;
+  }
+
+  .saved-list {
+    overflow-y: visible;
   }
 
   .sidebar,
   .storyboard {
     order: 1;
-    position: static;
   }
 
-  .main-panel {
+  .main-panel.chat-panel {
     order: 0;
+    height: calc(100vh - 300px);
   }
 }
 
@@ -734,14 +1064,20 @@ button, input, select, textarea {
     width: 100%;
   }
 
-  .prompt-chips {
-    justify-content: flex-start;
+  .sidebar,
+  .storyboard {
+    padding: 16px;
   }
 
-  .sidebar,
-  .storyboard,
-  .main-panel {
-    padding: 16px;
+  .chat-scroll,
+  .composer-fixed {
+    padding: 28px 0 32px;
+  }
+
+  .composer-inner {
+    width: 100%;
+    max-width: calc(100% - 72px);
+    margin: auto;
   }
 
   .sidebar,
@@ -749,12 +1085,95 @@ button, input, select, textarea {
     max-height: none;
   }
 
-  .chat-controls {
-    flex-direction: column;
-    align-items: stretch;
+  .chat-prompt-box {
+    grid-template-columns: 1fr;
+  }
+
+  .select-group {
+    flex-wrap: wrap;
+  }
+
+  .chat-input {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .chat-send {
+    grid-column: 1;
+    grid-row: 3;
     width: 100%;
   }
+
+  .form-foot {
+    grid-row: 4;
+  }
+}
+
+/* ================= LOGIN ================= */
+
+.login-page {
+  min-height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background: linear-gradient(180deg, #fffaf4, #f5f5f3);
+
+  padding: 40px;
+}
+
+.login-card {
+
+  width: 100%;
+  max-width: 460px;
+
+  background: #fff;
+
+  border: 1px solid #ece7df;
+
+  border-radius: 24px;
+
+  padding: 42px;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .08);
+
+}
+
+.login-card h1 {
+
+  font-size: 34px;
+
+  font-weight: 700;
+
+  margin-bottom: 12px;
+
+}
+
+.login-card p {
+
+  color: #6b7280;
+
+  margin-bottom: 28px;
+
+}
+
+.login-card .form-control {
+
+  height: 50px;
+
+  border-radius: 14px;
+
+}
+
+.login-card .btn {
+
+  height: 50px;
+
+  border-radius: 999px;
+
+  font-weight: 600;
+
 }

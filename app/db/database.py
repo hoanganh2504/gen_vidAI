@@ -14,3 +14,4 @@ def init_db():
         os.makedirs(db_dir, exist_ok=True)
     os.makedirs(settings.DOWNLOAD_DIR, exist_ok=True)
     Base.metadata.create_all(bind=engine)
+    

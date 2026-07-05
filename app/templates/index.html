@@ -1,144 +1,199 @@
 <!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>KingFoodmart AI Clip Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/app.css">
-  </head>
-  <body>
-    <header class="app-header">
-      <div class="header-inner container-fluid">
-        <a href="/" class="brand-lockup">
-          <img src="/static/img/kfm_logo_xmas.png" alt="KingFoodmart" class="brand-logo">
-        </a>
 
-        <div class="header-title">
-          <p class="eyebrow">AI Clip Studio</p>
-          <h1>Generate video concepts</h1>
-        </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KingFoodmart AI Clip Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css?v=8">
+</head>
 
-        <div class="header-actions">
-          <span class="badge-mode">{% if mock_mode %}<span class="dot"></span>Mock mode{% else %}<span class="dot dot-live"></span>Live mode{% endif %}</span>
-          <a href="/logout" class="btn btn-ghost btn-sm">Đăng xuất</a>
-        </div>
+<body>
+  <header class="app-header">
+    <div class="header-inner container-fluid">
+      <a href="/" class="brand-lockup">
+        <img src="/static/img/kfm_logo_xmas.png" alt="KingFoodmart" class="brand-logo">
+      </a>
+
+      <div class="header-title">
+        <p class="eyebrow">AI Clip Studio</p>
+        <h1>Generate video concepts</h1>
       </div>
-    </header>
 
-    <main class="app-shell container-fluid">
-      <aside class="sidebar">
-        <div class="sidebar-top">
-          <button id="new-clip" class="btn btn-primary w-100" type="button">
-            <span class="icon-plus">+</span> Clip mới
-          </button>
-        </div>
-        <div class="sidebar-heading">
-          <h2>Đã lưu</h2>
-          <button id="refresh-history" class="btn-icon" type="button" title="Làm mới" aria-label="Làm mới">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          </button>
-        </div>
-        <div id="history-list" class="saved-list">
-          <div class="saved-empty">Đang tải lịch sử...</div>
-        </div>
-      </aside>
+      <div class="header-actions">
+        <span class="badge-mode">{% if mock_mode %}<span class="dot"></span>Mock mode{% else %}<span
+            class="dot dot-live"></span>Live mode{% endif %}</span>
+        <a href="/logout" class="btn btn-ghost btn-sm">Đăng xuất</a>
+      </div>
+    </div>
+  </header>
 
-      <section class="main-panel">
-        <div class="composer-intro">
-          <p class="eyebrow">Bắt đầu nhanh</p>
-          <h2>Bạn muốn tạo clip gì hôm nay?</h2>
-        </div>
+  <main class="app-shell container-fluid">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <button id="new-clip" class="btn btn-primary w-100" type="button">
+          <span class="icon-plus">+</span> Clip mới
+        </button>
+      </div>
+      <div class="sidebar-heading">
+        <h2>Đã lưu</h2>
+        <button id="refresh-history" class="btn-icon" type="button" title="Làm mới" aria-label="Làm mới">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+        </button>
+      </div>
+      <div id="history-list" class="saved-list">
+        <div class="saved-empty">Đang tải lịch sử...</div>
+      </div>
+    </aside>
 
-        <div class="prompt-chips">
-          <button class="chip" type="button">🍜 Ramen Ad</button>
-          <button class="chip" type="button">🎬 Scene Sequence</button>
-          <button class="chip" type="button">🎙️ Voiceover Script</button>
-          <button class="chip" type="button">⚡ Quick Promo</button>
-          <button class="chip" type="button">🖼️ Storyboard</button>
-          <button class="chip" type="button">🍳 Visual Recipe</button>
-        </div>
+    <section class="main-panel chat-panel">
+      <div id="chat-scroll" class="chat-scroll">
+        <div id="composer-intro" class="composer-intro">
+          <p class="eyebrow">CHÀO MỪNG</p>
+          <h2>KingFoodmart AI Clip Studio</h2>
+          <p class="intro-sub">Biến ý tưởng món ăn thành video quảng cáo chỉ trong 3 bước.</p>
 
-        <div class="panel composer-card">
-          <form id="video-form" novalidate>
-            <div class="chat-prompt-box">
-              <label for="content" class="visually-hidden">Nhập prompt của bạn</label>
-              <textarea id="content" class="chat-input" rows="3" maxlength="500" placeholder="Ví dụ: Quảng cáo gà rán giòn với cảnh quay cận..." autofocus></textarea>
-              <div class="form-foot">
-                <small id="charcount" class="char-count">0/500</small>
-                <small id="content-error" class="text-danger"></small>
+          <div class="intro-steps">
+            <div class="intro-step">
+              <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
               </div>
-              <div class="chat-controls">
-                <div class="select-group">
-                  <select id="style" class="form-select">
-                    <option value="advertising">Quảng cáo</option>
-                    <option value="mukbang">Mukbang</option>
-                    <option value="review">Review món ăn</option>
-                    <option value="cinematic">Cinematic</option>
-                    <option value="asmr">Food ASMR</option>
-                  </select>
-                  <select id="duration" class="form-select">
-                    <option value="5">5 giây</option>
-                    <option value="10">10 giây</option>
-                  </select>
-                  <select id="aspect_ratio" class="form-select">
-                    <option value="9:16">9:16 · TikTok/Reels</option>
-                    <option value="16:9">16:9 · YouTube</option>
-                    <option value="1:1">1:1 · Instagram</option>
-                  </select>
-                </div>
-                <button id="create-btn" class="btn btn-primary chat-send" type="submit">
-                  <span class="spinner-border spinner-border-sm me-2 d-none" id="create-spinner"></span>
-                  <span id="create-label">Generate clip</span>
-                </button>
-              </div>
+              <h3>Mô tả nội dung</h3>
+              <p>Món ăn, phong cách quay, cảm xúc bạn muốn thể hiện.</p>
             </div>
-          </form>
-        </div>
 
-        <div id="status-area" class="status-card d-none">
-          <div class="status-row">
-            <div class="d-flex align-items-center gap-2">
-              <div id="status-spinner" class="spinner-border spinner-border-sm text-primary"></div>
-              <div>
-                <span id="status-text">Đang xếp hàng</span>
-                <div id="job-meta" class="text-secondary small"></div>
-              </div>
+            <div class="intro-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M5 12h14" />
+                <path d="M13 6l6 6-6 6" />
+              </svg>
             </div>
-            <button id="new-btn" class="btn btn-sm btn-outline-secondary d-none" type="button">Tạo mới</button>
-          </div>
-          <div class="progress progress-sm mb-3">
-            <div id="progress-inner" class="progress-bar" role="progressbar" style="width: 0%"></div>
-          </div>
-          <div id="video-container" class="video-preview d-none">
-            <video id="player" controls preload="metadata"></video>
-            <a id="download-link" class="btn btn-outline-primary btn-sm mt-3" href="#">Download MP4</a>
-            <details class="mt-3">
-              <summary>Prompt đã tối ưu</summary>
-              <pre id="optimized-prompt" class="prompt-box"></pre>
-            </details>
-          </div>
-          <div id="error-area" class="alert alert-danger mt-3 d-none"></div>
-        </div>
-      </section>
 
-      <aside class="storyboard">
-        <div class="panel storyboard-panel">
-          <h2>Storyboard</h2>
-          <div class="storyboard-placeholder">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <div class="intro-step">
+              <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M4 21v-7" />
+                  <path d="M4 10V3" />
+                  <path d="M12 21v-9" />
+                  <path d="M12 8V3" />
+                  <path d="M20 21v-5" />
+                  <path d="M20 12V3" />
+                  <path d="M1 14h6" />
+                  <path d="M9 8h6" />
+                  <path d="M17 16h6" />
+                </svg>
+              </div>
+              <h3>Chọn phong cách</h3>
+              <p>Phong cách, thời lượng và tỉ lệ khung hình phù hợp.</p>
+            </div>
+
+            <div class="intro-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M5 12h14" />
+                <path d="M13 6l6 6-6 6" />
+              </svg>
+            </div>
+
+            <div class="intro-step">
+              <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path
+                    d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </div>
+              <h3>Tạo video AI</h3>
+              <p>Theo dõi tiến trình ngay tại đây, xem kết quả ở Storyboard.</p>
+            </div>
+          </div>
+
+          <p class="intro-wish">Chúc bạn tạo được những video ưng ý! 🎬</p>
+        </div>
+
+        <div id="chat-messages" class="chat-messages"></div>
+      </div>
+
+      <div class="composer-card composer-fixed">
+        <form id="video-form" novalidate>
+          <div class="chat-prompt-box">
+            <label for="content" class="visually-hidden">Nhập prompt của bạn</label>
+            <textarea id="content" class="chat-input" rows="3" maxlength="500"
+              placeholder="Ví dụ: Quảng cáo gà rán giòn với cảnh quay cận..." autofocus></textarea>
+            <div class="form-foot">
+              <small id="charcount" class="char-count">0/500</small>
+              <small id="content-error" class="text-danger"></small>
+            </div>
+            <div class="chat-controls">
+              <div class="select-group">
+                <select id="style" class="form-select">
+                  <option value="advertising">Quảng cáo</option>
+                  <option value="mukbang">Mukbang</option>
+                  <option value="review">Review món ăn</option>
+                  <option value="cinematic">Cinematic</option>
+                  <option value="asmr">Food ASMR</option>
+                </select>
+                <select id="duration" class="form-select">
+                  <option value="5">5 giây</option>
+                  <option value="10">10 giây</option>
+                </select>
+                <select id="aspect_ratio" class="form-select">
+                  <option value="9:16">9:16 · TikTok/Reels</option>
+                  <option value="16:9">16:9 · YouTube</option>
+                  <option value="1:1">1:1 · Instagram</option>
+                </select>
+              </div>
+              <button id="create-btn" class="btn btn-primary chat-send" type="submit">
+                <span class="spinner-border spinner-border-sm me-2 d-none" id="create-spinner"></span>
+                <span id="create-label">Tạo video AI</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <aside class="storyboard">
+      <div class="panel storyboard-panel">
+        <h2>Storyboard</h2>
+        <div id="storyboard-body">
+          <div id="storyboard-placeholder" class="storyboard-placeholder">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            </svg>
             <p>Storyboard của bạn sẽ xuất hiện ở đây sau khi tạo.</p>
           </div>
         </div>
-      </aside>
-    </main>
+      </div>
+    </aside>
+  </main>
 
-    <div id="toast" class="app-toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="app-toast" role="status" aria-live="polite"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/app.js"></script>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/js/app.js?v=2"></script>
+</body>
+
 </html>

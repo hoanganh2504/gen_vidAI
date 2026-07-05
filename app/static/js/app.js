@@ -16,9 +16,6 @@ const styleLabels = {
   asmr: 'Food ASMR',
 };
 
-// Icon set used for the history action buttons (Xem/Tải/Xóa). Kept as
-// plain SVG strings so they inherit currentColor from whatever
-// btn-outline-* class is applied (primary/success/danger).
 const ACTION_ICONS = {
   view: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
   download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/></svg>',
@@ -27,9 +24,7 @@ const ACTION_ICONS = {
 
 function getEl(id) {
   const el = document.getElementById(id);
-  if (!el) {
-    console.warn(`Missing element with id=${id}`);
-  }
+  if (!el) console.warn(`Missing element with id=${id}`);
   return el;
 }
 
@@ -40,25 +35,20 @@ const form = getEl('video-form');
 const createBtn = getEl('create-btn');
 const createSpinner = getEl('create-spinner');
 const createLabel = getEl('create-label');
-const statusArea = getEl('status-area');
-const emptyState = getEl('empty-state');
-const statusText = getEl('status-text');
-const statusSpinner = getEl('status-spinner');
-const jobMeta = getEl('job-meta');
-const progressInner = getEl('progress-inner');
-const videoContainer = getEl('video-container');
-const player = getEl('player');
-const downloadLink = getEl('download-link');
-const optimizedPrompt = getEl('optimized-prompt');
-const errorArea = getEl('error-area');
 const historyList = getEl('history-list');
-const newBtn = getEl('new-btn');
+const newBtn = getEl('new-clip');
 const toast = getEl('toast');
+
+const chatScroll = getEl('chat-scroll');
+const composerIntro = getEl('composer-intro');
+const chatMessages = getEl('chat-messages');
+const storyboardBody = getEl('storyboard-body');
 
 let currentJobId = null;
 let pollTimer = null;
 let toastTimer = null;
 
+// ---------------------------------- Toast / error helpers ----------------------------------
 function showToast(message) {
   if (!toast) {
     console.warn('Toast element missing, message:', message);
@@ -72,12 +62,9 @@ function showToast(message) {
   }, 3200);
 }
 
-// Global error handlers to capture uncaught errors and promises
 window.addEventListener('error', (ev) => {
   try {
-    const msg = ev?.message || String(ev);
-    console.error('Uncaught error:', ev.error || ev);
-    showToast(msg);
+    showToast(ev?.message || String(ev));
   } catch (e) {
     console.error('Error in global error handler', e);
   }
@@ -85,9 +72,7 @@ window.addEventListener('error', (ev) => {
 
 window.addEventListener('unhandledrejection', (ev) => {
   try {
-    const reason = ev?.reason;
-    console.error('Unhandled rejection:', reason);
-    showToast(reason?.message || String(reason));
+    showToast(ev?.reason?.message || String(ev?.reason));
   } catch (e) {
     console.error('Error in rejection handler', e);
   }
@@ -97,81 +82,10 @@ function getErrorMessage(payload, fallback = 'Có lỗi xảy ra. Vui lòng th�
   return payload?.error?.message || payload?.detail?.error?.message || payload?.detail || fallback;
 }
 
-function setSubmitting(isSubmitting) {
-  if (createBtn) createBtn.disabled = isSubmitting;
-  if (createSpinner && createSpinner.classList) createSpinner.classList.toggle('d-none', !isSubmitting);
-  if (createLabel) createLabel.textContent = isSubmitting ? 'Đang tạo yêu cầu...' : 'Tạo video AI';
-}
-
-function updateCharCount() {
-  if (contentEl.value.length > 500) {
-    contentEl.value = contentEl.value.slice(0, 500);
-  }
-  charcount.textContent = `${contentEl.value.length}/500`;
-}
-
-function validateContent() {
-  const value = contentEl.value.trim();
-  contentError.textContent = '';
-  if (value.length < 3) {
-    contentError.textContent = 'Nội dung phải có ít nhất 3 ký tự.';
-    return false;
-  }
-  return true;
-}
-
-function resetResult() {
-  currentJobId = null;
-  clearPoll();
-  if (emptyState && emptyState.classList) emptyState.classList.remove('d-none');
-  if (statusArea && statusArea.classList) statusArea.classList.add('d-none');
-  if (errorArea && errorArea.classList) errorArea.classList.add('d-none');
-  if (videoContainer && videoContainer.classList) videoContainer.classList.add('d-none');
-  if (newBtn && newBtn.classList) newBtn.classList.add('d-none');
-  if (player) {
-    try {
-      player.removeAttribute('src');
-      player.load();
-    } catch (e) {
-      console.warn('Player reset failed', e);
-    }
-  }
-}
-
-function clearPoll() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-function renderJob(job) {
-  if (emptyState && emptyState.classList) emptyState.classList.add('d-none');
-  if (statusArea && statusArea.classList) statusArea.classList.remove('d-none');
-  if (newBtn && newBtn.classList) newBtn.classList.remove('d-none');
-  if (errorArea && errorArea.classList) errorArea.classList.add('d-none');
-
-  const label = statusLabels[job.status] || job.status;
-  if (statusText) statusText.textContent = label;
-  if (jobMeta) jobMeta.textContent = `${job.content} • ${styleLabels[job.style] || job.style} • ${job.duration}s • ${job.aspect_ratio}`;
-  if (progressInner) progressInner.style.width = `${Math.round((job.progress || 0) * 100)}%`;
-  if (statusSpinner && statusSpinner.classList) statusSpinner.classList.toggle('d-none', ['completed', 'failed', 'cancelled'].includes(job.status));
-
-  if (job.status === 'completed') {
-    if (videoContainer && videoContainer.classList) videoContainer.classList.remove('d-none');
-    if (player) player.src = `/api/videos/${job.id}/stream`;
-    if (downloadLink) downloadLink.href = `/api/videos/${job.id}/download`;
-    if (optimizedPrompt) optimizedPrompt.textContent = job.optimized_prompt || '';
-  } else {
-    if (videoContainer && videoContainer.classList) videoContainer.classList.add('d-none');
-  }
-
-  if (job.status === 'failed') {
-    if (errorArea && errorArea.classList) {
-      errorArea.classList.remove('d-none');
-      errorArea.innerHTML = `<strong>Tạo video thất bại.</strong><div>${job.error_message || 'Vui lòng thử lại.'}</div><button class="btn btn-sm btn-outline-danger mt-2" type="button" onclick="retryJob(${job.id})">Thử lại</button>`;
-    }
-  }
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[char]));
 }
 
 async function apiFetch(url, options = {}) {
@@ -188,16 +102,186 @@ async function fetchJob(jobId) {
   return payload.data;
 }
 
+// ---------------------------------- Composer helpers ----------------------------------
+function setSubmitting(isSubmitting) {
+  if (createBtn) createBtn.disabled = isSubmitting;
+  if (createSpinner) createSpinner.classList.toggle('d-none', !isSubmitting);
+  if (createLabel) createLabel.textContent = isSubmitting ? 'Đang tạo yêu cầu...' : 'Tạo video AI';
+}
+
+function updateCharCount() {
+  if (contentEl.value.length > 500) contentEl.value = contentEl.value.slice(0, 500);
+  charcount.textContent = `${contentEl.value.length}/500`;
+}
+
+function validateContent() {
+  const value = contentEl.value.trim();
+  contentError.textContent = '';
+  if (value.length < 3) {
+    contentError.textContent = 'Nội dung phải có ít nhất 3 ký tự.';
+    return false;
+  }
+  return true;
+}
+
+// ---------------------------------- Chat feed ----------------------------------
+function scrollChatToBottom() {
+  if (chatScroll) chatScroll.scrollTop = chatScroll.scrollHeight;
+}
+
+function hideIntro() {
+  if (composerIntro) composerIntro.classList.add('d-none');
+}
+
+function addUserMessage(job) {
+  hideIntro();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg user';
+  wrap.innerHTML = `
+    <div class="msg-bubble">
+      <div>${escapeHtml(job.content)}</div>
+      <div class="msg-meta">${styleLabels[job.style] || job.style} • ${job.duration}s • ${job.aspect_ratio}</div>
+    </div>
+  `;
+  chatMessages.appendChild(wrap);
+  scrollChatToBottom();
+}
+
+function ensureAssistantMessage(jobId, initialLabel) {
+  let el = document.getElementById(`job-msg-${jobId}`);
+  if (el) return el;
+  hideIntro();
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-msg assistant';
+  wrap.id = `job-msg-${jobId}`;
+  wrap.innerHTML = `
+    <div class="msg-bubble status-bubble">
+      <div class="status-line">
+        <span class="spinner-border spinner-border-sm text-primary status-spinner"></span>
+        <span class="status-text">${initialLabel || 'Đang xếp hàng'}</span>
+      </div>
+      <div class="progress"><div class="progress-bar" style="width:0%"></div></div>
+      <div class="status-error d-none"></div>
+      <div class="status-prompt d-none">
+        <details>
+          <summary>Prompt đã tối ưu</summary>
+          <pre class="prompt-box"></pre>
+        </details>
+      </div>
+    </div>
+  `;
+  chatMessages.appendChild(wrap);
+  scrollChatToBottom();
+  return wrap;
+}
+
+function updateAssistantMessage(job) {
+  const el = ensureAssistantMessage(job.id, statusLabels[job.status] || job.status);
+  const label = statusLabels[job.status] || job.status;
+  const statusText = el.querySelector('.status-text');
+  const spinner = el.querySelector('.status-spinner');
+  const progressBar = el.querySelector('.progress-bar');
+  const errorBox = el.querySelector('.status-error');
+  const promptBox = el.querySelector('.status-prompt');
+  const promptPre = promptBox ? promptBox.querySelector('.prompt-box') : null;
+  const isDone = ['completed', 'failed', 'cancelled'].includes(job.status);
+
+  if (statusText) statusText.textContent = label;
+  if (spinner) spinner.classList.toggle('d-none', isDone);
+  if (progressBar) progressBar.style.width = `${Math.round((job.progress || 0) * 100)}%`;
+
+  if (job.status === 'failed') {
+    errorBox.classList.remove('d-none');
+    errorBox.innerHTML = `
+      <strong>Tạo video thất bại.</strong>
+      <div>${escapeHtml(job.error_message || 'Vui lòng thử lại.')}</div>
+      <button class="btn btn-sm btn-outline-danger" type="button" onclick="retryJob(${job.id})">Thử lại</button>
+    `;
+    if (promptBox) promptBox.classList.add('d-none');
+  } else if (job.status === 'completed') {
+    errorBox.classList.add('d-none');
+    statusText.textContent = `${label} • xem kết quả ở Storyboard →`;
+    if (promptBox && promptPre && job.optimized_prompt) {
+      promptPre.textContent = job.optimized_prompt;
+      promptBox.classList.remove('d-none');
+    }
+  } else {
+    errorBox.classList.add('d-none');
+    if (promptBox) promptBox.classList.add('d-none');
+  }
+  scrollChatToBottom();
+}
+
+// ---------------------------------- Storyboard (result) ----------------------------------
+function renderStoryboardPlaceholder() {
+  storyboardBody.innerHTML = `
+    <div id="storyboard-placeholder" class="storyboard-placeholder">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <p>Storyboard của bạn sẽ xuất hiện ở đây sau khi tạo.</p>
+    </div>
+  `;
+}
+
+function renderStoryboard(job) {
+  if (!job) {
+    renderStoryboardPlaceholder();
+    return;
+  }
+
+  if (job.status === 'completed') {
+    storyboardBody.innerHTML = `
+      <div class="storyboard-video">
+        <video id="player" controls preload="metadata" src="/api/videos/${job.id}/stream"></video>
+        <a class="btn btn-outline-primary btn-sm" href="/api/videos/${job.id}/download">Download MP4</a>
+      </div>
+    `;
+  } else if (job.status === 'failed') {
+    storyboardBody.innerHTML = `
+      <div class="storyboard-generating">
+        <strong>Tạo video thất bại</strong>
+        <p>${escapeHtml(job.error_message || 'Vui lòng thử lại.')}</p>
+        <button class="btn btn-sm btn-outline-danger" type="button" onclick="retryJob(${job.id})">Thử lại</button>
+      </div>
+    `;
+  } else {
+    storyboardBody.innerHTML = `
+      <div class="storyboard-generating">
+        <div class="spinner-border spinner-border-sm text-primary"></div>
+        <strong>${statusLabels[job.status] || job.status}</strong>
+        <p>${escapeHtml(job.content)}</p>
+        <div class="progress"><div class="progress-bar" style="width:${Math.round((job.progress || 0) * 100)}%"></div></div>
+      </div>
+    `;
+  }
+}
+
+// ---------------------------------- Polling ----------------------------------
+function clearPoll() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+function openJobThread(job) {
+  clearPoll();
+  chatMessages.innerHTML = ''; // clear toàn bộ chat cũ trước khi mở job này
+  composerIntro.classList.add('d-none');
+  addUserMessage(job);
+  ensureAssistantMessage(job.id, statusLabels[job.status] || job.status);
+  updateAssistantMessage(job);
+  renderStoryboard(job);
+}
+
 function pollJob(jobId) {
   clearPoll();
   const tick = async () => {
     try {
       const job = await fetchJob(jobId);
-      renderJob(job);
+      updateAssistantMessage(job);
+      if (currentJobId === jobId) renderStoryboard(job);
       await refreshHistory();
-      if (['completed', 'failed', 'cancelled'].includes(job.status)) {
-        clearPoll();
-      }
+      if (['completed', 'failed', 'cancelled'].includes(job.status)) clearPoll();
     } catch (error) {
       showToast(error.message);
     }
@@ -206,34 +290,42 @@ function pollJob(jobId) {
   pollTimer = setInterval(tick, 3000);
 }
 
+// ---------------------------------- Form submit ----------------------------------
 if (form) {
   form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  if (!validateContent()) return;
+    event.preventDefault();
+    if (!validateContent()) return;
 
-  const payload = {
-    content: contentEl.value.trim(),
-    style: document.getElementById('style').value,
-    duration: Number(document.getElementById('duration').value),
-    aspect_ratio: document.getElementById('aspect_ratio').value,
-  };
+    const payload = {
+      content: contentEl.value.trim(),
+      style: document.getElementById('style').value,
+      duration: Number(document.getElementById('duration').value),
+      aspect_ratio: document.getElementById('aspect_ratio').value,
+    };
 
-  setSubmitting(true);
-  try {
-    const result = await apiFetch('/api/videos/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    currentJobId = result.data.id;
-    showToast('Đã tạo job video.');
-    pollJob(currentJobId);
-    await refreshHistory();
-  } catch (error) {
-    showToast(error.message);
-  } finally {
-    setSubmitting(false);
-  }
+    setSubmitting(true);
+    try {
+      const result = await apiFetch('/api/videos/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const job = result.data;
+      currentJobId = job.id;
+
+      chatMessages.innerHTML = '';
+      openJobThread(job);
+
+      contentEl.value = '';
+      updateCharCount();
+
+      pollJob(job.id);
+      await refreshHistory();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSubmitting(false);
+    }
   });
 } else {
   console.warn('Video form not found; submit disabled');
@@ -244,30 +336,29 @@ contentEl.addEventListener('input', () => {
   validateContent();
 });
 
-document.querySelectorAll('.sample').forEach((button) => {
-  button.addEventListener('click', () => {
-    if (!contentEl) return;
-    contentEl.value = button.textContent;
+
+if (newBtn) {
+  newBtn.addEventListener('click', () => {
+    clearPoll();
+    currentJobId = null;
+    chatMessages.innerHTML = '';
+    composerIntro.classList.remove('d-none');
+    renderStoryboardPlaceholder();
+    contentEl.value = '';
     updateCharCount();
     validateContent();
   });
-});
+}
 
-if (newBtn) newBtn.addEventListener('click', resetResult);
 const refreshBtn = getEl('refresh-history');
 if (refreshBtn) refreshBtn.addEventListener('click', refreshHistory);
-document.getElementById('new-clip').addEventListener('click', () => {
-  contentEl.value = '';
-  updateCharCount();
-  validateContent();
-  resetResult();
-});
 
 window.addEventListener('DOMContentLoaded', () => {
   updateCharCount();
   refreshHistory();
 });
 
+// ---------------------------------- History ----------------------------------
 async function refreshHistory() {
   try {
     const payload = await apiFetch('/api/videos?page=1&page_size=20');
@@ -302,25 +393,14 @@ async function refreshHistory() {
   }
 }
 
-function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  }[char]));
-}
-
+// ---------------------------------- History actions ----------------------------------
 window.viewJob = async function viewJob(id) {
   try {
     currentJobId = id;
     const job = await fetchJob(id);
-    renderJob(job);
+    openJobThread(job);
     if (!['completed', 'failed', 'cancelled'].includes(job.status)) {
       pollJob(id);
-    } else {
-      clearPoll();
     }
   } catch (error) {
     showToast(error.message);
@@ -330,9 +410,11 @@ window.viewJob = async function viewJob(id) {
 window.retryJob = async function retryJob(id) {
   try {
     const payload = await apiFetch(`/api/videos/${id}/retry`, { method: 'POST' });
-    currentJobId = payload.data.id;
+    const job = payload.data;
+    currentJobId = job.id;
+    openJobThread(job);
     showToast('Đã tạo job thử lại.');
-    pollJob(currentJobId);
+    pollJob(job.id);
     await refreshHistory();
   } catch (error) {
     showToast(error.message);
@@ -343,7 +425,10 @@ window.deleteJob = async function deleteJob(id) {
   if (!confirm('Xóa job này khỏi lịch sử?')) return;
   try {
     await apiFetch(`/api/videos/${id}`, { method: 'DELETE' });
-    if (currentJobId === id) resetResult();
+    if (currentJobId === id) {
+      currentJobId = null;
+      renderStoryboardPlaceholder();
+    }
     await refreshHistory();
     showToast('Đã xóa job.');
   } catch (error) {
